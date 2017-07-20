@@ -1,0 +1,15 @@
+package: github.com/jj-tyro/raftmcd
+import:
+- package: github.com/astaxie/beego
+  version: ^1.8.3
+  subpackages:
+  - logs
+- package: github.com/dustin/gomemcached
+  subpackages:
+  - client
+  - server
+- package: github.com/hashicorp/raft
+  vcs: git
+  repo: https://github.com/jj-tyro/raft.git
+- package: github.com/hashicorp/raft-boltdb
+- package: github.com/silenceper/pool
