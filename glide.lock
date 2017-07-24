@@ -1,5 +1,5 @@
 hash: 8198a14c3376437dc844fec77d94d6bf6adb6a0100284d5fd756778fc71748b2
-updated: 2017-07-24T15:00:24.693528499+08:00
+updated: 2017-07-24T17:28:29.1259239+08:00
 imports:
 - name: github.com/armon/go-metrics
   version: f036747b9d0e8590f175a5d654a2194a7d9df4b5
@@ -19,13 +19,15 @@ imports:
   subpackages:
   - codec
 - name: github.com/hashicorp/raft
-  version: a34e3b1c377535c8029fde83237955d421728176
+  version: de62e5f5d6744304f4b452abaf6150f9a429d6c6
   repo: https://github.com/jj-tyro/raft.git
   vcs: git
 - name: github.com/hashicorp/raft-boltdb
   version: df631556b57507bd5d0ed4f87468fd93ab025bef
 - name: github.com/silenceper/pool
   version: e4c4536403d9765c8ea74cda2ee49dcb0848bc7a
-- name: golang.org/x/sys/unix
+- name: golang.org/x/sys
   version: cd2c276457edda6df7fb04895d3fd6a6add42926
+  subpackages:
+  - unix
 testImports: []
