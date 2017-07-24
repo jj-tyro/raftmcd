@@ -244,9 +244,22 @@ func NewRaft(conf *Config, fsm FSM, logs LogStore, stable StableStore, snaps Sna
 	r.setCurrentTerm(currentTerm)
 	r.setLastLog(lastLog.Index, lastLog.Term)
 
-	// Attempt to restore a snapshot if there are any
-	if err := r.restoreSnapshot(); err != nil {
-		return nil, err
+	//Read Last Applied index from FSM
+	lIdx, e := r.fsm.GetLastApplied()
+	if e != nil {
+		return nil, e
+	}
+
+	// If read Last Apllied index from FSM successed, then set it to raft;
+	// Else attempt to restore from snapshots
+	if lIdx > 0 {
+		r.setLastApplied(lIdx)
+	} else {
+		// Attempt to restore a snapshot if there are any
+		if err := r.restoreSnapshot(); err != nil {
+			return nil, err
+		}
+
 	}
 
 	// Setup a heartbeat fast-path to avoid head-of-line
@@ -1193,6 +1206,9 @@ func (r *Raft) processLogs(index uint64, future *logFuture) {
 
 		// Update the lastApplied index and term
 		r.setLastApplied(idx)
+
+		// Persist Last Applied index to FSM.
+		r.fsm.SetLastApplied(idx)
 	}
 }
 
@@ -1603,6 +1619,9 @@ func (r *Raft) installSnapshot(rpc RPC, req *InstallSnapshotRequest) {
 
 	// Update the lastApplied so we don't replay old logs
 	r.setLastApplied(req.LastLogIndex)
+
+	// Persist Last Applied index to FSM.
+	r.fsm.SetLastApplied(req.LastLogIndex)
 
 	// Update the last stable snapshot info
 	r.setLastSnapshot(req.LastLogIndex, req.LastLogTerm)

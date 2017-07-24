@@ -20,7 +20,8 @@ import (
 // the logs sequentially.
 type MockFSM struct {
 	sync.Mutex
-	logs [][]byte
+	logs        [][]byte
+	lastApplied uint64
 }
 
 type MockSnapshot struct {
@@ -50,6 +51,15 @@ func (m *MockFSM) Restore(inp io.ReadCloser) error {
 
 	m.logs = nil
 	return dec.Decode(&m.logs)
+}
+
+func (m *MockFSM) SetLastApplied(index uint64) error {
+	m.lastApplied = index
+	return nil
+}
+
+func (m *MockFSM) GetLastApplied() (uint64, error) {
+	return m.lastApplied, nil
 }
 
 func (m *MockSnapshot) Persist(sink SnapshotSink) error {

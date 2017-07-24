@@ -209,7 +209,7 @@ func main() {
 	logfname := filepath.Join(logdir, name+".log")
 	logfconf := `{"filename":"` + logfname + `","maxsize":10000000,"daily":true,"maxdays":7,"rotate":true,"level":7}`
 
-	log.Async(10000)
+	//log.Async(10000)
 	log.EnableFuncCallDepth(true)
 	log.SetLogFuncCallDepth(2)
 	log.SetLogger(logs.AdapterConsole)
@@ -242,14 +242,14 @@ func main() {
 
 	p, err := pool.NewChannelPool(poolConfig)
 	if err != nil {
-		log.Critical("Create connection pool to memcached server failed:  %s", e.Error())
+		log.Critical("Create connection pool to memcached server failed:  %s", err.Error())
 		panic("Start Failed")
 
 	}
 
 	var n *raftnode.Node
 	if n, err = raftnode.NewNode(&opts, &p); err != nil {
-		log.Critical("Create connection pool to memcached server failed:  %s", e.Error())
+		log.Critical("Create raft node failed:  %s", err.Error())
 		panic("Start Failed")
 	}
 

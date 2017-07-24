@@ -11,5 +11,6 @@ import:
 - package: github.com/hashicorp/raft
   vcs: git
   repo: https://github.com/jj-tyro/raft.git
+  ref: last-applied-persist
 - package: github.com/hashicorp/raft-boltdb
 - package: github.com/silenceper/pool

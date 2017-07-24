@@ -25,6 +25,14 @@ type FSM interface {
 	// concurrently with any other command. The FSM must discard all previous
 	// state.
 	Restore(io.ReadCloser) error
+
+	// Persist Last Applied index to FSM. Last Applied index will be read from
+	// FSM when raft restarted using GetLastApplued(), to avoid appled log
+	// applied again.
+	SetLastApplied(index uint64) error
+
+	// Read Last Applied index from FSM.
+	GetLastApplied() (uint64, error)
 }
 
 // FSMSnapshot is returned by an FSM in response to a Snapshot

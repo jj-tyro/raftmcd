@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"io"
+	"strconv"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/dustin/gomemcached"
@@ -90,6 +91,56 @@ func (m *McdStore) transfer(req *gomemcached.MCRequest) (rv *gomemcached.MCRespo
 	rv, err = cli.Send(req)
 
 	(*m.cliPool).Close(c)
+
+	return
+}
+
+const lastAppliedKey string = "__RAFT_LAST_APPLIED__"
+
+func (m *McdStore) SetLastApplied(index uint64) (err error) {
+	var c interface{}
+
+	if c, err = (*m.cliPool).Get(); err != nil {
+		return
+	}
+
+	cli := c.(*mcdcli.Client)
+
+	_, err = cli.Set(0, lastAppliedKey, 0, 0, []byte(strconv.FormatUint(index, 10)))
+	(*m.cliPool).Close(c)
+
+	if err != nil {
+		log.Error("Failed to persist last applied index: %s", err.Error())
+		return
+	}
+
+	return
+}
+
+func (m *McdStore) GetLastApplied() (index uint64, err error) {
+	var c interface{}
+
+	if c, err = (*m.cliPool).Get(); err != nil {
+		return
+	}
+
+	cli := c.(*mcdcli.Client)
+
+	var rv *gomemcached.MCResponse
+	rv, err = cli.Get(0, lastAppliedKey)
+	(*m.cliPool).Close(c)
+
+	if err != nil {
+		if rv != nil && rv.Status == gomemcached.KEY_ENOENT {
+			index = 0
+			err = nil
+			return
+		}
+		log.Error("Failed to read persisted last applied index: %s", err.Error())
+		return
+	}
+
+	index, err = strconv.ParseUint(string(rv.Body), 10, 64)
 
 	return
 }
