@@ -34,6 +34,7 @@ type raftStore interface {
 
 type Options struct {
 	Addr       string
+	Tn         raft.StreamLayer
 	Rfdir      string
 	Peers      []string
 	Snapretain int
@@ -70,9 +71,9 @@ func NewNode(opts *Options, pool *pool.Pool) (node *Node, err error) {
 		return
 	}
 
-	n.trans, err = raft.NewTCPTransport(opts.Addr, nil, 3, 2*time.Second, log)
-	if err != nil {
-		log.Error("Create raft node's Tcp transport failed: %s", err.Error())
+	n.trans = raft.NewNetworkTransport(opts.Tn, 3, 2*time.Second, log)
+	if n.trans == nil {
+		log.Error("Create raft node's Tcp transport failed")
 		return
 	}
 

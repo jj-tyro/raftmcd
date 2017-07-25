@@ -22,6 +22,7 @@ import (
 	mcdcli "github.com/dustin/gomemcached/client"
 	mcdsvr "github.com/dustin/gomemcached/server"
 	"github.com/jj-tyro/raftmcd/raftnode"
+	"github.com/rqlite/rqlite/tcp"
 	"github.com/silenceper/pool"
 )
 
@@ -182,6 +183,11 @@ func waitForConnections(ls net.Listener, handler mcdsvr.RequestHandler) {
 	}
 }
 
+const (
+	muxRaftHeader = 1 // Raft consensus communications
+	muxMetaHeader = 2 // Cluster meta communications
+)
+
 const name = `raftmcd`
 const desc = `A proxy for memcached using raft consensus to replicate data within a cluster.`
 
@@ -215,6 +221,12 @@ func main() {
 	log.SetLogger(logs.AdapterConsole)
 	log.SetLogger(logs.AdapterFile, logfconf)
 
+	ls, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
+	if err != nil {
+		log.Critical("Listen to %d failed:  %s", *port, err.Error())
+		panic("Start Failed")
+	}
+
 	var opts raftnode.Options
 	opts.Addr = fmt.Sprintf("%s:%d", *raft_addr, *raft_port)
 	if len(*peers) > 0 {
@@ -223,11 +235,20 @@ func main() {
 	opts.Rfdir = *dir
 	opts.Snapretain = 3
 
-	ls, e := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	if e != nil {
-		log.Critical("Listen to %d failed:  %s", *port, e.Error())
+	lr, err := net.Listen("tcp", opts.Addr)
+	if err != nil {
+		log.Critical("Listen to %d failed:  %s", *port, err.Error())
 		panic("Start Failed")
 	}
+
+	mux, err := tcp.NewMux(lr, nil)
+	if err != nil {
+		log.Critical("Create MUX on raft listen port %v failed: %s", lr, err.Error())
+		panic("Start Failed")
+	}
+	mux.InsecureSkipVerify = false
+	opts.Tn = mux.Listen(muxRaftHeader)
+	go mux.Serve()
 
 	factory := func() (interface{}, error) { return mcdcli.Connect("tcp", *mcd_addr+":"+strconv.Itoa(*mcd_port)) }
 	close := func(v interface{}) error { return v.(*mcdcli.Client).Close() }
@@ -247,8 +268,8 @@ func main() {
 
 	}
 
-	var n *raftnode.Node
-	if n, err = raftnode.NewNode(&opts, &p); err != nil {
+	n, err := raftnode.NewNode(&opts, &p)
+	if err != nil {
 		log.Critical("Create raft node failed:  %s", err.Error())
 		panic("Start Failed")
 	}

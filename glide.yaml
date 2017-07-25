@@ -9,8 +9,12 @@ import:
   - client
   - server
 - package: github.com/hashicorp/raft
-  vcs: git
+  version: last-applied-persist
   repo: https://github.com/jj-tyro/raft.git
-  ref: last-applied-persist
+  vcs: git
 - package: github.com/hashicorp/raft-boltdb
 - package: github.com/silenceper/pool
+- package: github.com/rqlite/rqlite
+  version: ^4.0.0
+  subpackages:
+  - tcp

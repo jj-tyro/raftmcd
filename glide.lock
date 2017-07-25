@@ -1,5 +1,5 @@
-hash: 8198a14c3376437dc844fec77d94d6bf6adb6a0100284d5fd756778fc71748b2
-updated: 2017-07-24T17:28:29.1259239+08:00
+hash: 1bad080001bdc6bf2bc2522e205fa798080ee93a89d37d306684957c97bfcbcc
+updated: 2017-07-25T14:19:23.275011637+08:00
 imports:
 - name: github.com/armon/go-metrics
   version: f036747b9d0e8590f175a5d654a2194a7d9df4b5
@@ -24,10 +24,12 @@ imports:
   vcs: git
 - name: github.com/hashicorp/raft-boltdb
   version: df631556b57507bd5d0ed4f87468fd93ab025bef
+- name: github.com/rqlite/rqlite
+  version: d782c46a6199eb8bbb77480a3470118dc9be85c8
+  subpackages:
+  - tcp
 - name: github.com/silenceper/pool
   version: e4c4536403d9765c8ea74cda2ee49dcb0848bc7a
-- name: golang.org/x/sys
+- name: golang.org/x/sys/unix
   version: cd2c276457edda6df7fb04895d3fd6a6add42926
-  subpackages:
-  - unix
 testImports: []
